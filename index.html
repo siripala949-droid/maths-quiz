@@ -1,431 +1,517 @@
 <!DOCTYPE html>
-<html lang="si">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>10 ශ්‍රේණිය ගණිතය - ආදර්ශ ප්‍රශ්න පත්‍රය (Grade 10 Math)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Grade 10 Mathematics - Full Syllabus</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
-            --bg-color: #f0f4f8;
-            --text-color: #333333;
-            --card-bg: #ffffff;
-            --primary: #0066cc;
-            --primary-hover: #005bb5;
-            --correct: #28a745;
-            --wrong: #dc3545;
-            --border: #cccccc;
-            --explanation-bg: #e9f7ef;
-            --explanation-text: #145c32;
-        }
-
-        body.dark-mode {
             --bg-color: #121212;
-            --text-color: #f1f1f1;
-            --card-bg: #1e1e1e;
-            --primary: #4da6ff;
-            --primary-hover: #3399ff;
-            --border: #444444;
-            --explanation-bg: #1a3a2a;
-            --explanation-text: #81c784;
+            --container-bg: #1e1e1e;
+            --text-color: #ffffff;
+            --text-muted: #aaaaaa;
+            --primary: #bb86fc;
+            --primary-hover: #9965f4;
+            --danger: #cf6679;
+            --success: #03dac6;
         }
 
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            transition: background-color 0.3s, color 0.3s;
+            user-select: none;
         }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
-            margin: 0;
-            padding: 15px;
+            height: 100vh;
+            overflow: hidden; /* No-scroll layout */
             display: flex;
             justify-content: center;
+            align-items: center;
         }
 
-        .app-container {
+        #app-container {
             width: 100%;
             max-width: 600px;
-            background: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--container-bg);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            height: 100%;
             padding: 20px;
-            margin-top: 10px;
-            margin-bottom: 20px;
         }
 
-        .header {
+        .screen.active {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
         }
 
-        .header h1 {
-            font-size: 1.2rem;
-            margin: 0;
-        }
-
-        .controls {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .timer {
-            font-weight: bold;
-            font-size: 1.1rem;
+        /* Start Screen */
+        .header-title {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 24px;
             color: var(--primary);
         }
-
-        .theme-toggle {
-            background: var(--border);
-            border: none;
-            padding: 8px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: bold;
-            color: var(--text-color);
+        .header-sub {
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: 10px;
+            font-size: 14px;
         }
 
-        .progress-container {
-            width: 100%;
-            background-color: var(--border);
+        .btn {
+            background-color: var(--primary);
+            color: #000;
+            border: none;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
             border-radius: 8px;
-            height: 10px;
+            cursor: pointer;
+            margin-top: auto;
+            margin-bottom: 40px;
+            transition: background 0.2s;
+        }
+
+        .btn:active {
+            background-color: var(--primary-hover);
+        }
+
+        /* Quiz Screen */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #333;
+            border-radius: 4px;
             margin-bottom: 20px;
             overflow: hidden;
         }
-
-        .progress-bar {
+        .progress-fill {
             height: 100%;
-            width: 0%;
             background-color: var(--primary);
-            transition: width 0.3s ease;
+            width: 0%;
+            transition: width 0.3s;
         }
 
-        .question-box {
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-muted);
+            font-size: 14px;
             margin-bottom: 20px;
         }
 
-        .q-number {
-            font-size: 0.9rem;
-            color: gray;
-            margin-bottom: 5px;
+        .question-text {
+            font-size: 20px;
+            line-height: 1.5;
+            margin-bottom: 30px;
+            flex-grow: 1;
         }
 
-        .q-text {
-            font-size: 1.3rem;
-            font-weight: bold;
-            line-height: 1.4;
-            margin-bottom: 20px;
-        }
-
-        /* STRICT MOBILE VERTICAL LAYOUT */
         .options-container {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 15px;
+            margin-bottom: 20px;
         }
 
         .option-btn {
-            width: 100%;
-            padding: 16px;
-            font-size: 1.1rem;
-            text-align: left;
-            background-color: transparent;
-            border: 2px solid var(--primary);
+            background-color: #2c2c2c;
             color: var(--text-color);
-            border-radius: 10px;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 18px;
+            font-size: 16px;
+            text-align: left;
             cursor: pointer;
             transition: all 0.2s;
         }
 
-        .option-btn:hover:not(:disabled) {
-            background-color: var(--primary);
-            color: #fff;
+        .option-btn:active {
+            background-color: #3a3a3a;
+            border-color: var(--primary);
         }
 
-        .option-btn:disabled {
-            cursor: not-allowed;
-            opacity: 0.8;
-        }
-
-        .option-btn.correct {
-            background-color: var(--correct);
-            border-color: var(--correct);
-            color: white;
-        }
-
-        .option-btn.wrong {
-            background-color: var(--wrong);
-            border-color: var(--wrong);
-            color: white;
-        }
-
-        .explanation {
-            display: none;
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 8px;
-            background-color: var(--explanation-bg);
-            color: var(--explanation-text);
-            font-size: 1.05rem;
-            line-height: 1.5;
-            border-left: 5px solid var(--correct);
-        }
-
-        .next-btn {
-            display: none;
-            width: 100%;
-            padding: 20px;
-            margin-top: 25px;
-            font-size: 1.4rem;
-            font-weight: bold;
-            color: white;
-            background: linear-gradient(135deg, #ff9900, #ff5500);
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(255, 85, 0, 0.4);
-            text-transform: uppercase;
+        /* Result Screen */
+        .result-container {
+            overflow-y: auto; /* Allow scrolling inside results if table is long */
+            flex-grow: 1;
+            padding-bottom: 20px;
         }
         
-        .next-btn:active {
-            transform: scale(0.98);
+        .result-container::-webkit-scrollbar {
+            width: 5px;
         }
-
-        .results-box {
-            display: none;
-            text-align: center;
-        }
-
-        .results-box h2 {
-            font-size: 2rem;
-            margin-bottom: 10px;
-        }
-
-        .grade-display {
-            font-size: 4rem;
-            font-weight: bold;
-            color: var(--primary);
-            margin: 20px 0;
-        }
-
-        .restart-btn {
-            display: block;
+        .result-container::-webkit-scrollbar-thumb {
             background: var(--primary);
-            box-shadow: 0 4px 10px rgba(0, 102, 204, 0.4);
+            border-radius: 5px;
         }
+
+        .score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 5px solid var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 32px;
+            font-weight: bold;
+            margin: 20px auto;
+        }
+
+        .motivation-box {
+            background-color: #2c2c2c;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 5px solid var(--primary);
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        /* Print Table Styles (hidden on UI, used for PDF) */
+        #pdf-content {
+            display: none;
+            background: white;
+            color: black;
+            padding: 20px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 12px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .correct-text { color: green; font-weight: bold; }
+        .incorrect-text { color: red; font-weight: bold; }
+
     </style>
 </head>
 <body>
 
-    <div class="app-container" id="quiz-app">
-        <div class="header">
-            <h1>10 ශ්‍රේණිය - ගණිතය</h1>
-            <div class="controls">
-                <div class="timer" id="timer">00:00</div>
-                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
-            </div>
+<div id="app-container">
+    
+    <div id="start-screen" class="screen active">
+        <h1 class="header-title">Grade 10 Mathematics</h1>
+        <p class="header-sub">Full Syllabus Model Paper<br>Terms 1, 2, and 3</p>
+        <div style="flex-grow: 1; display: flex; justify-content: center; align-items: center;">
+            <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="#bb86fc" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>
+            </svg>
         </div>
-
-        <div class="progress-container">
-            <div class="progress-bar" id="progress-bar"></div>
-        </div>
-
-        <div id="question-view">
-            <div class="question-box">
-                <div class="q-number" id="q-number">ප්‍රශ්නය 1 / 40</div>
-                <div class="q-text" id="q-text">Loading...</div>
-            </div>
-
-            <div class="options-container" id="options">
-                </div>
-
-            <div class="explanation" id="explanation">
-                <strong>පැහැදිලි කිරීම:</strong> <span id="exp-text"></span>
-            </div>
-
-            <button class="next-btn" id="next-btn" onclick="nextQuestion()">මීළඟ ප්‍රශ්නය ➔</button>
-        </div>
-
-        <div class="results-box" id="results-view">
-            <h2>ප්‍රතිඵලය (Results)</h2>
-            <p style="font-size: 1.2rem;">ලබාගත් ලකුණු: <strong id="final-score">0</strong> / 40</p>
-            <p style="font-size: 1.2rem;">ප්‍රතිශතය: <strong id="final-percentage">0%</strong></p>
-            <div class="grade-display" id="final-grade">A</div>
-            <p>ගතවූ කාලය: <strong id="final-time">00:00</strong></p>
-            <button class="next-btn restart-btn" onclick="location.reload()">නැවත උත්සාහ කරන්න</button>
-        </div>
+        <button class="btn" onclick="startQuiz()">Start Exam</button>
     </div>
 
-    <script>
-        const quizData = [
-            { q: "1. x + 8 = 15 නම්, x හි අගය සොයන්න.", o: ["5", "7", "10", "23"], a: 1, e: "x = 15 - 8 වේ. එබැවින් x = 7." },
-            { q: "2. දිග 5cm හා පළල 4cm වන සෘජුකෝණාස්‍රයක වර්ගඵලය කොපමණද?", o: ["9 cm²", "18 cm²", "20 cm²", "40 cm²"], a: 2, e: "වර්ගඵලය = දිග × පළල = 5 × 4 = 20 cm²" },
-            { q: "3. පැත්තක දිග 3cm වූ ඝනකයක පරිමාව සොයන්න.", o: ["9 cm³", "18 cm³", "27 cm³", "81 cm³"], a: 2, e: "පරිමාව = දිග × පළල × උස = 3 × 3 × 3 = 27 cm³" },
-            { q: "4. 4 සහ 6 යන සංඛ්‍යා වල කුඩාම පොදු ගුණාකාරය (කු.පො.ගු.) කීයද?", o: ["10", "12", "24", "2"], a: 1, e: "4 හි ගුණාකාර: 4, 8, 12, 16... 6 හි ගුණාකාර: 6, 12, 18... කුඩාම පොදු අගය 12 වේ." },
-            { q: "5. 15 සහ 25 හි මහා පොදු සාධකය (ම.පො.සා.) කීයද?", o: ["3", "5", "10", "75"], a: 1, e: "15 හි සාධක 1,3,5,15. 25 හි සාධක 1,5,25. පොදු විශාලතම සාධකය 5 වේ." },
-            { q: "6. 2³ × 2² හි අගය කීයද?", o: ["16", "24", "32", "64"], a: 2, e: "දර්ශක නීති අනුව: 2^(3+2) = 2^5 = 32. (නැතහොත් 8 × 4 = 32)." },
-            { q: "7. n(A)=5, n(B)=4 හා n(A ∩ B)=2 නම්, n(A ∪ B) හි අගය සොයන්න.", o: ["5", "7", "9", "11"], a: 1, e: "සූත්‍රය: n(A ∪ B) = n(A) + n(B) - n(A ∩ B). එනම් 5 + 4 - 2 = 7." },
-            { q: "8. (x+2)(x+3) ප්‍රසාරණය කළ විට ලැබෙන්නේ කුමක්ද?", o: ["x² + 5x + 6", "x² + 6x + 5", "x² + x + 6", "x² - 5x - 6"], a: 0, e: "x(x) + x(3) + 2(x) + 2(3) = x² + 3x + 2x + 6 = x² + 5x + 6." },
-            { q: "9. x² - 16 හි සාධක මොනවාද?", o: ["(x-8)(x+2)", "(x-4)(x-4)", "(x-4)(x+4)", "(x+16)(x-1)"], a: 2, e: "මෙය වර්ග දෙකක අන්තරයකි. a² - b² = (a-b)(a+b). එබැවින් (x-4)(x+4)." },
-            { q: "10. සාධාරණ කාසියක් උඩ දැමීමේදී සිරස වැටීමේ සම්භාවිතාව කොපමණද?", o: ["1/4", "1/3", "1/2", "1"], a: 2, e: "ප්‍රතිඵල 2කි (සිරස, අගය). සිරස ලැබීමේ අවස්ථා 1කි. සම්භාවිතාව 1/2." },
-            { q: "11. දාදු කැටයක් පෙරලීමේදී ඉරට්ටේ සංඛ්‍යාවක් ලැබීමේ සම්භාවිතාව කීයද?", o: ["1/6", "1/3", "1/2", "2/3"], a: 2, e: "ඉරට්ටේ සංඛ්‍යා (2, 4, 6) අවස්ථා 3කි. මුළු අවස්ථා 6කි. 3/6 = 1/2." },
-            { q: "12. රු. 500කින් 10% ක අගය කොපමණද?", o: ["5", "50", "100", "450"], a: 1, e: "500 × (10/100) = 50." },
-            { q: "13. රු. 400 ට මිලදී ගත් භාණ්ඩයක් රු. 500 ට විකුණයි නම් ලාභ ප්‍රතිශතය කීයද?", o: ["10%", "20%", "25%", "100%"], a: 2, e: "ලාභය = 500 - 400 = 100. ලාභ % = (100 / 400) × 100% = 25%." },
-            { q: "14. y = 3x + 5 සරල රේඛාවේ අනුක්‍රමණය කීයද?", o: ["-2", "3", "5", "8"], a: 1, e: "y = mx + c සමීකරණයට අනුව, අනුක්‍රමණය (m) 3 වේ." },
-            { q: "15. y = -2x + 4 රේඛාවේ අන්තඃඛණ්ඩය (c) කීයද?", o: ["-2", "2", "4", "6"], a: 2, e: "y = mx + c සමීකරණයට අනුව, අන්තඃඛණ්ඩය (c) 4 වේ." },
-            { q: "16. (x-1)(x+5) = 0 වර්ගජ සමීකරණයේ මූල මොනවාද?", o: ["1, 5", "1, -5", "-1, 5", "-1, -5"], a: 1, e: "x-1 = 0 (x=1) හෝ x+5 = 0 (x=-5). මූල 1 සහ -5 වේ." },
-            { q: "17. අරය 7cm වූ වෘත්තයක පරිධිය කීයද? (π = 22/7)", o: ["22 cm", "44 cm", "88 cm", "154 cm"], a: 1, e: "පරිධිය = 2πr = 2 × (22/7) × 7 = 44 cm." },
-            { q: "18. අරය 7cm වූ වෘත්තයක වර්ගඵලය කීයද? (π = 22/7)", o: ["22 cm²", "44 cm²", "88 cm²", "154 cm²"], a: 3, e: "වර්ගඵලය = πr² = (22/7) × 7 × 7 = 154 cm²." },
-            { q: "19. පැය 2කදී කි.මී. 100ක් ගමන් කළ වාහනයක මධ්‍යන්‍ය වේගය කීයද?", o: ["20 km/h", "50 km/h", "100 km/h", "200 km/h"], a: 1, e: "වේගය = දුර / කාලය = 100 / 2 = 50 km/h." },
-            { q: "20. ත්‍රිකෝණයක කෝණ දෙකක් 60° හා 50° වේ. එහි තුන්වන කෝණය කීයද?", o: ["60°", "70°", "80°", "90°"], a: 1, e: "ත්‍රිකෝණයක අභ්‍යන්තර කෝණ වල ඓක්‍යය 180° කි. 180° - (60° + 50°) = 70°." },
-            { q: "21. සෘජුකෝණී ත්‍රිකෝණයක බද්ධ පාද 3cm හා 4cm නම් කර්ණයේ දිග කීයද?", o: ["5 cm", "6 cm", "7 cm", "12 cm"], a: 0, e: "පයිතගරස් ප්‍රමේයයට අනුව: කර්ණය² = 3² + 4² = 9 + 16 = 25. කර්ණය = 5 cm." },
-            { q: "22. 3500 විද්‍යාත්මක අංකනයෙන් ලියූ විට ලැබෙන පිළිතුර කුමක්ද?", o: ["35 × 10²", "3.5 × 10³", "0.35 × 10⁴", "3.5 × 10²"], a: 1, e: "1ත් 10ත් අතර සංඛ්‍යාවක් ලෙස දැක්විය යුතුය. දශම ස්ථානය වමට 3ක් ගෙන ගිය බැවින් 3.5 × 10³." },
-            { q: "23. 2³ = 8 යන්න ලඝුගණක ආකාරයෙන් ලියූ විට නිවැරදි ප්‍රකාශනය කුමක්ද?", o: ["log₃ 8 = 2", "log₂ 3 = 8", "log₈ 2 = 3", "log₂ 8 = 3"], a: 3, e: "පාදය 2 වේ. දර්ශකය 3 වේ. එනම් log₂ 8 = 3." },
-            { q: "24. 3x < 12 අසමානතාවය විසඳන්න.", o: ["x > 4", "x < 4", "x = 4", "x < 9"], a: 1, e: "දෙපසම 3න් බෙදූ විට, x < 4 ලැබේ." },
-            { q: "25. 1/x + 2/x සුළු කළ විට පිළිතුර කුමක්ද?", o: ["3/x", "2/x²", "3/2x", "2/x"], a: 0, e: "හරයන් සමාන බැවින් ලවයන් එකතු කළ හැක. (1+2)/x = 3/x." },
-            { q: "26. මිනිසුන් 2කට දින 6ක් ගතවන කාර්යයක්, මිනිසුන් 3කට කිරීමට කොපමණ දින ගණනක් ගතවේද?", o: ["2", "3", "4", "5"], a: 2, e: "මුළු මිනිස් දින ගණන = 2 × 6 = 12. මිනිසුන් 3කට ගතවන දින ගණන = 12 / 3 = 4." },
-            { q: "27. මිනිත්තුවකට ලීටර් 2ක් ගලා යන ජල බටයකින් මිනිත්තු 5කදී පිරෙන ජල පරිමාව කීයද?", o: ["5 L", "7 L", "10 L", "12 L"], a: 2, e: "ශීඝ්‍රතාව × කාලය = 2 × 5 = 10 L." },
-            { q: "28. සරල රේඛාවක් මත පිහිටි බද්ධ කෝණ දෙකක් 110° හා x වේ. x හි අගය කීයද?", o: ["60°", "70°", "80°", "90°"], a: 1, e: "සරල රේඛාවක බද්ධ කෝණ වල ඓක්‍යය 180° කි. x = 180° - 110° = 70°." },
-            { q: "29. අනුපූරක කෝණ යුගලයක එක් කෝණයක් 40° නම්, අනෙක් කෝණය කීයද?", o: ["40°", "50°", "140°", "150°"], a: 1, e: "අනුපූරක කෝණ වල ඓක්‍යය 90° කි. 90° - 40° = 50°." },
-            { q: "30. අරය 7cm හා උස 10cm වූ සිලින්ඩරයක පරිමාව කීයද?", o: ["154 cm³", "770 cm³", "1540 cm³", "3080 cm³"], a: 2, e: "පරිමාව = πr²h. වෘත්තාකාර පතුලේ වර්ගඵලය 154 cm² වේ. 154 × 10 = 1540 cm³." },
-            { q: "31. 2, 4, 6, 8, 10 යන සංඛ්‍යා වල මධ්‍යන්‍යය සොයන්න.", o: ["4", "5", "6", "8"], a: 2, e: "මධ්‍යන්‍යය = අගයන්ගේ ඓක්‍යය / අගයන් ගණන. (30) / 5 = 6." },
-            { q: "32. 1, 3, 5, 7, 9 යන සංඛ්‍යා වල මධ්‍යස්ථය (Median) කීයද?", o: ["3", "4", "5", "7"], a: 2, e: "සංඛ්‍යා ආරෝහණ රටාවට ඇති විට හරි මැද ඇති අගය 5 වේ." },
-            { q: "33. 2, 3, 3, 4, 5 යන සංඛ්‍යා වල මාතය (Mode) කීයද?", o: ["2", "3", "4", "5"], a: 1, e: "වැඩිම වාර ගණනක් (2 වතාවක්) යෙදී ඇති සංඛ්‍යාව 3 වේ." },
-            { q: "34. රු. 2000ක වටිනාකමකට 5% ක බද්දක් අය කරන්නේ නම්, ගෙවිය යුතු බදු මුදල කීයද?", o: ["රු. 50", "රු. 100", "රු. 150", "රු. 200"], a: 1, e: "2000 × (5/100) = 100." },
-            { q: "35. රු. 1000 ක මුදලක් 10% ක වාර්ෂික සුළු පොලියක් යටතේ වසර 2ක් තැන්පත් කළ විට ලැබෙන මුළු පොලිය කීයද?", o: ["රු. 100", "රු. 200", "රු. 300", "රු. 1200"], a: 1, e: "පොලිය = I = (prt)/100 = (1000 × 10 × 2) / 100 = 200." },
-            { q: "36. වර්ගඵලය 25 cm² වූ සමචතුරස්‍රයක පරිමිතිය සොයන්න.", o: ["5 cm", "10 cm", "20 cm", "25 cm"], a: 2, e: "එක් පැත්තක දිග = √25 = 5 cm. පරිමිතිය = 5 × 4 = 20 cm." },
-            { q: "37. 1/2 + 1/4 සුළු කළ විට පිළිතුර කුමක්ද?", o: ["2/6", "3/4", "1/8", "2/4"], a: 1, e: "හරයන් සමාන කිරීම: 1/2 යනු 2/4 වේ. 2/4 + 1/4 = 3/4." },
-            { q: "38. 2x + 3y + x - y වීජීය ප්‍රකාශනය සුළු කරන්න.", o: ["3x + 4y", "3x + 2y", "x + 2y", "2x + 3y"], a: 1, e: "සජාතීය පද එකතු කිරීම: (2x + x) + (3y - y) = 3x + 2y." },
-            { q: "39. රු. 50ක් වටිනා භාණ්ඩයක් 10% ක වට්ටමකට විකුණන්නේ නම්, එහි විකුණුම් මිල කීයද?", o: ["රු. 40", "රු. 45", "රු. 50", "රු. 55"], a: 1, e: "වට්ටම = 50 × 10% = රු. 5. විකුණුම් මිල = 50 - 5 = 45." },
-            { q: "40. සමාන්තර රේඛා දෙකක් තීර්යක් රේඛාවකින් ඡේදනය වීමේදී සෑදෙන 'ඒකාන්තර කෝණ' (Alternate angles) වල ලක්ෂණය කුමක්ද?", o: ["සමාන වේ", "අනුපූරක වේ", "බද්ධ වේ", "පරිපූරක වේ"], a: 0, e: "සමාන්තර රේඛා වල සෑදෙන Z හැඩයේ ඒකාන්තර කෝණ අගයෙන් සමාන වේ." }
-        ];
+    <div id="quiz-screen" class="screen">
+        <div class="progress-bar">
+            <div id="progress-fill" class="progress-fill"></div>
+        </div>
+        <div class="question-header">
+            <span id="question-counter">Question 1 of 40</span>
+            <span id="question-topic">Algebra</span>
+        </div>
+        <div id="question-text" class="question-text">
+            Loading question...
+        </div>
+        <div id="options-container" class="options-container">
+            </div>
+    </div>
 
-        let currentQIndex = 0;
-        let score = 0;
-        let seconds = 0;
-        let timerInterval;
+    <div id="result-screen" class="screen">
+        <div class="result-container">
+            <h2 style="text-align: center; margin-top: 20px;">Exam Completed!</h2>
+            <div class="score-circle" id="score-display">0/40</div>
+            
+            <div class="motivation-box" id="motivation-text">
+                </div>
 
-        // Elements
-        const elTimer = document.getElementById("timer");
-        const elProgressBar = document.getElementById("progress-bar");
-        const elQNumber = document.getElementById("q-number");
-        const elQText = document.getElementById("q-text");
-        const elOptions = document.getElementById("options");
-        const elExplanation = document.getElementById("explanation");
-        const elExpText = document.getElementById("exp-text");
-        const elNextBtn = document.getElementById("next-btn");
+            <p style="text-align: center; color: var(--text-muted); margin-bottom: 20px;">
+                Download your detailed performance report below.
+            </p>
+        </div>
+        
+        <button class="btn" onclick="generatePDF()">Download PDF Report</button>
+        <button class="btn" style="background-color: #333; color: white; margin-top: -30px;" onclick="location.reload()">Retake Exam</button>
+    </div>
 
-        // Initialization
-        window.onload = () => {
-            startTimer();
+</div>
+
+<div id="pdf-content">
+    <h2 style="text-align: center; color: #333;">Grade 10 Mathematics - Performance Report</h2>
+    <h3 id="pdf-score" style="text-align: center; color: #555;"></h3>
+    <p id="pdf-motivation" style="text-align: center; font-style: italic; color: #666;"></p>
+    <table>
+        <thead>
+            <tr>
+                <th>Q#</th>
+                <th>Topic</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="pdf-table-body">
+            </tbody>
+    </table>
+</div>
+
+<script>
+    // ---------------------------------------------------------
+    // BATCH 1: QUESTIONS 1 TO 15
+    // Note for User: The system is designed for 40 questions. 
+    // Ask for the next batch when ready.
+    // ---------------------------------------------------------
+    const questions = [
+        {
+            q: "What is the perimeter of a semicircle with a radius of 7cm? (Take π = 22/7)",
+            options: ["22 cm", "36 cm", "14 cm", "44 cm"],
+            ans: 1, // 22 + 14 = 36
+            topic: "Perimeter"
+        },
+        {
+            q: "Find the factors of x² - 9.",
+            options: ["(x - 3)(x - 3)", "(x + 9)(x - 1)", "(x - 3)(x + 3)", "(x + 3)(x + 3)"],
+            ans: 2,
+            topic: "Algebraic Expressions"
+        },
+        {
+            q: "Solve for x: 3x - 5 = 16",
+            options: ["7", "6", "8", "5"],
+            ans: 0,
+            topic: "Equations"
+        },
+        {
+            q: "A radio marked at Rs. 2000 is sold for Rs. 1800. What is the percentage discount?",
+            options: ["10%", "15%", "20%", "5%"],
+            ans: 0,
+            topic: "Percentages"
+        },
+        {
+            q: "Simplify the fraction: 1/4 + 2/5",
+            options: ["3/9", "13/20", "3/20", "8/20"],
+            ans: 1,
+            topic: "Fractions"
+        },
+        {
+            q: "The parallel sides of a trapezium are 8cm and 12cm. If the perpendicular height is 5cm, what is its area?",
+            options: ["100 cm²", "40 cm²", "50 cm²", "60 cm²"],
+            ans: 2,
+            topic: "Area"
+        },
+        {
+            q: "What is the mean of the data set: 4, 8, 12, 16, 20?",
+            options: ["10", "12", "14", "16"],
+            ans: 1,
+            topic: "Statistics"
+        },
+        {
+            q: "Find the Least Common Multiple (LCM) of 4x²y and 6xy².",
+            options: ["12x²y²", "24x²y²", "2xy", "10x³y³"],
+            ans: 0,
+            topic: "Algebraic Fractions"
+        },
+        {
+            q: "If the probability of rain tomorrow is 0.35, what is the probability that it will not rain?",
+            options: ["0.55", "0.65", "0.75", "0.35"],
+            ans: 1,
+            topic: "Probability"
+        },
+        {
+            q: "Write 2³ = 8 in logarithmic form.",
+            options: ["log₂8 = 3", "log₃8 = 2", "log₈2 = 3", "log₂3 = 8"],
+            ans: 0,
+            topic: "Logarithms"
+        },
+        {
+            q: "What is the gradient of the line given by the equation y = -2x + 4?",
+            options: ["4", "-2", "2", "-4"],
+            ans: 1,
+            topic: "Graphs"
+        },
+        {
+            q: "A cylinder has a base area of 50 cm² and a height of 10 cm. Find its volume.",
+            options: ["500 cm³", "150 cm³", "5000 cm³", "250 cm³"],
+            ans: 0,
+            topic: "Volume"
+        },
+        {
+            q: "Solve the inequality: 2x + 4 > 10",
+            options: ["x > 3", "x < 3", "x > 7", "x > 6"],
+            ans: 0,
+            topic: "Inequalities"
+        },
+        {
+            q: "If A = {1, 2, 3, 4} and B = {3, 4, 5, 6}, find A ∩ B.",
+            options: ["{1, 2}", "{3, 4}", "{1, 2, 3, 4, 5, 6}", "{5, 6}"],
+            ans: 1,
+            topic: "Sets"
+        },
+        {
+            q: "Two triangles are similar. The sides of the first are 3cm, 4cm, and 5cm. If the longest side of the second triangle is 15cm, what is its shortest side?",
+            options: ["6 cm", "9 cm", "12 cm", "10 cm"],
+            ans: 1,
+            topic: "Geometry - Similarity"
+        }
+    ];
+
+    // Variables for App State
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let userAnswers = []; // Array to store objects: {qNum, topic, isCorrect}
+
+    // DOM Elements
+    const startScreen = document.getElementById('start-screen');
+    const quizScreen = document.getElementById('quiz-screen');
+    const resultScreen = document.getElementById('result-screen');
+    const questionText = document.getElementById('question-text');
+    const optionsContainer = document.getElementById('options-container');
+    const questionCounter = document.getElementById('question-counter');
+    const questionTopic = document.getElementById('question-topic');
+    const progressFill = document.getElementById('progress-fill');
+    
+    function startQuiz() {
+        startScreen.classList.remove('active');
+        quizScreen.classList.add('active');
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        // Clear previous options
+        optionsContainer.innerHTML = '';
+        
+        const currentQ = questions[currentQuestionIndex];
+        
+        // Update headers and progress
+        questionCounter.innerText = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+        questionTopic.innerText = currentQ.topic;
+        progressFill.style.width = `${((currentQuestionIndex + 1) / questions.length) * 100}%`;
+        
+        // Set question text
+        questionText.innerText = currentQ.q;
+        
+        // Generate vertical mobile-first buttons
+        currentQ.options.forEach((option, index) => {
+            const btn = document.createElement('button');
+            btn.classList.add('option-btn');
+            btn.innerText = option;
+            btn.onclick = () => selectAnswer(index);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function selectAnswer(selectedIndex) {
+        const currentQ = questions[currentQuestionIndex];
+        const isCorrect = selectedIndex === currentQ.ans;
+        
+        if (isCorrect) score++;
+
+        // Save data for PDF
+        userAnswers.push({
+            qNum: currentQuestionIndex + 1,
+            topic: currentQ.topic,
+            isCorrect: isCorrect
+        });
+
+        currentQuestionIndex++;
+
+        if (currentQuestionIndex < questions.length) {
             loadQuestion();
+        } else {
+            showResults();
+        }
+    }
+
+    function showResults() {
+        quizScreen.classList.remove('active');
+        resultScreen.classList.add('active');
+
+        // Update Score UI
+        document.getElementById('score-display').innerText = `${score}/${questions.length}`;
+
+        // Smart Motivation Engine Logic
+        const percentage = (score / questions.length) * 100;
+        const motivationBox = document.getElementById('motivation-text');
+        const pdfMotivation = document.getElementById('pdf-motivation');
+        
+        let advice = "";
+        
+        if (percentage < 40) {
+            advice = "ඔබ ජ්‍යාමිතිය සහ වීජ ගණිතය කොටස් ගැන වැඩිපුර අවධානය යොමු කළ යුතුය. (You need to focus more on geometry and algebra). Don't give up, review your textbook and keep practicing!";
+            motivationBox.style.borderLeftColor = "var(--danger)";
+        } else if (percentage < 75) {
+            advice = "හොඳ උත්සාහයක්! (Good effort!) You have a solid foundation, but focusing on your weaker topics will help you achieve an A grade easily.";
+            motivationBox.style.borderLeftColor = "#ffeb3b"; // Yellow
+        } else {
+            advice = "ඉතා විශිෂ්ටයි! (Excellent!) You have mastered the Grade 10 syllabus perfectly. Keep this momentum going for your O/Ls!";
+            motivationBox.style.borderLeftColor = "var(--success)";
+        }
+
+        motivationBox.innerText = advice;
+        pdfMotivation.innerText = advice;
+
+        // Populate PDF Table
+        const tbody = document.getElementById('pdf-table-body');
+        tbody.innerHTML = '';
+        
+        userAnswers.forEach(ans => {
+            const tr = document.createElement('tr');
+            
+            const tdNum = document.createElement('td');
+            tdNum.innerText = ans.qNum;
+            
+            const tdTopic = document.createElement('td');
+            tdTopic.innerText = ans.topic;
+            
+            const tdStatus = document.createElement('td');
+            tdStatus.innerText = ans.isCorrect ? "Correct" : "Incorrect";
+            tdStatus.className = ans.isCorrect ? "correct-text" : "incorrect-text";
+            
+            tr.appendChild(tdNum);
+            tr.appendChild(tdTopic);
+            tr.appendChild(tdStatus);
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('pdf-score').innerText = `Final Score: ${score} out of ${questions.length} (${percentage.toFixed(1)}%)`;
+    }
+
+    function generatePDF() {
+        const element = document.getElementById('pdf-content');
+        element.style.display = 'block'; // Make visible for capture
+
+        const opt = {
+            margin:       10,
+            filename:     'Grade10_Math_Report.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
-        function startTimer() {
-            timerInterval = setInterval(() => {
-                seconds++;
-                let mins = Math.floor(seconds / 60);
-                let secs = seconds % 60;
-                elTimer.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-            }, 1000);
-        }
+        // Generate PDF, then hide the div again
+        html2pdf().set(opt).from(element).save().then(() => {
+            element.style.display = 'none';
+        });
+    }
+</script>
 
-        function loadQuestion() {
-            if (currentQIndex >= quizData.length) {
-                showResults();
-                return;
-            }
-
-            const q = quizData[currentQIndex];
-            elQNumber.innerText = `ප්‍රශ්නය ${currentQIndex + 1} / 40`;
-            elQText.innerText = q.q;
-            
-            // Update Progress Bar
-            const progressPercent = (currentQIndex / quizData.length) * 100;
-            elProgressBar.style.width = `${progressPercent}%`;
-
-            // Clear previous options
-            elOptions.innerHTML = "";
-            elExplanation.style.display = "none";
-            elNextBtn.style.display = "none";
-
-            // Generate Options
-            q.o.forEach((optText, index) => {
-                const btn = document.createElement("button");
-                btn.className = "option-btn";
-                btn.innerText = optText;
-                btn.onclick = () => selectOption(index, btn, q.a, q.e);
-                elOptions.appendChild(btn);
-            });
-        }
-
-        function selectOption(selectedIndex, btn, correctIndex, explanationText) {
-            // Disable all options
-            const allBtns = elOptions.querySelectorAll(".option-btn");
-            allBtns.forEach((b, i) => {
-                b.disabled = true;
-                if (i === correctIndex) {
-                    b.classList.add("correct");
-                }
-            });
-
-            // Check if correct
-            if (selectedIndex === correctIndex) {
-                score++;
-            } else {
-                btn.classList.add("wrong");
-            }
-
-            // Show explanation and next button
-            elExpText.innerText = explanationText;
-            elExplanation.style.display = "block";
-            
-            if(currentQIndex === quizData.length - 1) {
-                elNextBtn.innerText = "ප්‍රතිඵල පෙන්වන්න 🏆";
-            }
-            elNextBtn.style.display = "block";
-        }
-
-        function nextQuestion() {
-            currentQIndex++;
-            loadQuestion();
-        }
-
-        function showResults() {
-            clearInterval(timerInterval);
-            document.getElementById("question-view").style.display = "none";
-            document.getElementById("results-view").style.display = "block";
-            elProgressBar.style.width = "100%";
-
-            const percentage = (score / quizData.length) * 100;
-            let grade = 'F';
-
-            if (percentage >= 75) grade = 'A';
-            else if (percentage >= 65) grade = 'B';
-            else if (percentage >= 50) grade = 'C';
-            else if (percentage >= 35) grade = 'S';
-
-            document.getElementById("final-score").innerText = score;
-            document.getElementById("final-percentage").innerText = `${percentage.toFixed(0)}%`;
-            document.getElementById("final-grade").innerText = grade;
-            document.getElementById("final-time").innerText = elTimer.innerText;
-
-            const gradeColor = grade === 'A' ? '#28a745' : 
-                               grade === 'B' ? '#007bff' : 
-                               grade === 'C' ? '#ffc107' : 
-                               grade === 'S' ? '#fd7e14' : '#dc3545';
-            
-            document.getElementById("final-grade").style.color = gradeColor;
-        }
-
-        function toggleTheme() {
-            document.body.classList.toggle("dark-mode");
-        }
-    </script>
 </body>
 </html>
